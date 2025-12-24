@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -114,11 +114,7 @@ function SubscribePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchPlan();
-  }, [planId]);
-
-  const fetchPlan = async () => {
+  const fetchPlan = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/plans/${planId}`);
       setPlan(response.data);
@@ -127,7 +123,11 @@ function SubscribePage() {
       setError('Plan not found');
       setLoading(false);
     }
-  };
+  }, [planId]);
+
+  useEffect(() => {
+    fetchPlan();
+  }, [fetchPlan]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -366,18 +366,13 @@ function PaymentPage() {
 // Subscription Status Page
 function SubscriptionStatusPage() {
   const { subscriptionId } = useParams();
-  const navigate = useNavigate();
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [renewing, setRenewing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    fetchSubscription();
-  }, [subscriptionId]);
-
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/subscriptions/status/${subscriptionId}`);
       setSubscription(response.data);
@@ -386,7 +381,11 @@ function SubscriptionStatusPage() {
       setError('Subscription not found');
       setLoading(false);
     }
-  };
+  }, [subscriptionId]);
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
 
   const handleRenew = async () => {
     if (!window.confirm('Are you sure you want to renew this subscription now?')) return;
@@ -555,7 +554,6 @@ function SubscriptionStatusPage() {
 // User Subscriptions Page
 function UserSubscriptionsPage() {
   const [email, setEmail] = useState('');
-  const [userId, setUserId] = useState(null);
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -569,14 +567,12 @@ function UserSubscriptionsPage() {
       // First, get user by email
       const userResponse = await axios.get(`${API_BASE_URL}/users/${email}`);
       const userId = userResponse.data.id;
-      setUserId(userId);
 
       // Then get subscriptions
       const subsResponse = await axios.get(`${API_BASE_URL}/subscriptions/${userId}`);
       setSubscriptions(subsResponse.data);
     } catch (err) {
       setError('User not found or no subscriptions');
-      setUserId(null);
       setSubscriptions([]);
     } finally {
       setLoading(false);
