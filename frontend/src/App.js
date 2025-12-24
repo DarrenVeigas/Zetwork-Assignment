@@ -4,6 +4,11 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Log API URL in development to help debug
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Base URL:', API_BASE_URL);
+}
+
 // Header Component
 function Header() {
   return (
